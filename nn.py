@@ -133,3 +133,16 @@ class FeedForward:
 
     def parameters(self):
         return self.net.parameters()
+
+
+class EncodingBlock:
+    def __init__(self, embed_dim, num_heads, inner_features) -> None:
+        self.attentional_sublayer = Sublayer(MultiHeadAttention(embed_dim, num_heads))
+        self.feedforward_sublayer = Sublayer(FeedForward(embed_dim, embed_dim, inner_features))
+        self.block = Sequential(self.attentional_sublayer, self.feedforward_sublayer)
+
+    def __call__(self, x):
+        return self.block(x)
+
+    def parameters(self):
+        return self.block.parameters()
