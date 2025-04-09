@@ -106,3 +106,15 @@ class LayerNorm:
 
     def parameters(self):
         return []
+
+
+class Sublayer:
+    def __init__(self, f) -> None:
+        self.f = f
+        self.layer_norm = LayerNorm()
+
+    def __call__(self, x):
+        return self.layer_norm(x + self.f(x))
+
+    def parameters(self):
+        return self.f.parameters() + self.layer_norm.parameters()
