@@ -78,3 +78,20 @@ class Attention:
 
     def parameters(self):
         return [self._query, self._key, self._value]
+
+
+class MultiHeadAttention:
+    def __init__(self, embed_dim, num_heads) -> None:
+        assert (
+            embed_dim % num_heads == 0
+        ), f"Embedding dimension ({embed_dim}) must be divisible by the number of heads ({num_heads})"
+        self.attentions = [Attention(embed_dim, int(embed_dim / num_heads)) for _ in range(num_heads)]
+        self.w0 = torch.randn(embed_dim, embed_dim) * 0.01
+
+    def __call__(self, x):
+        out = [att(x) for att in self.attentions]
+        out = torch.concat(out, -1) @ self.w0
+        return out
+
+    def parameters(self):
+        return [p for att in self.attentions for p in att.parameters()] + [self.w0]
