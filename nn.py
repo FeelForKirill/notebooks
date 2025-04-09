@@ -118,3 +118,18 @@ class Sublayer:
 
     def parameters(self):
         return self.f.parameters() + self.layer_norm.parameters()
+
+
+class FeedForward:
+    def __init__(self, in_features, out_features, inner_features) -> None:
+        self.net = Sequential(
+            Linear(in_features, inner_features),
+            Relu(),
+            Linear(inner_features, out_features),
+        )
+
+    def __call__(self, x):
+        return self.net(x)
+
+    def parameters(self):
+        return self.net.parameters()
