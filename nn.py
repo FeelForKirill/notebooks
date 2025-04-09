@@ -95,3 +95,14 @@ class MultiHeadAttention:
 
     def parameters(self):
         return [p for att in self.attentions for p in att.parameters()] + [self.w0]
+
+
+class LayerNorm:
+    def __call__(self, x):
+        eps = 1e-10
+        std = (x.var(-1, keepdim=True) + eps) ** 0.5
+        mean = x.mean(-1, keepdim=True)
+        return (x - mean) / std
+
+    def parameters(self):
+        return []
