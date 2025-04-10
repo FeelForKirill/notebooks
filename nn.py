@@ -146,3 +146,20 @@ class EncodingBlock:
 
     def parameters(self):
         return self.sublayers.parameters()
+
+
+class Encoder:
+    def __init__(self, vocav_size, context_length, embedding_dim, num_blocks, num_heads, inner_features) -> None:
+        self.emb = Embedding(vocav_size, embedding_dim)
+        self.pos_emb = Embedding(context_length, embedding_dim)
+        self.pe = self.pos_emb(torch.arange(context_length))
+        self.blocks = Sequential(*[EncodingBlock(embedding_dim, num_heads, inner_features) for _ in range(num_blocks)])
+
+    def __call__(self, x):
+        e = self.emb(x)
+        inp = e + self.pe
+        out = self.blocks(inp)
+        return out
+
+    def parameters(self):
+        return [*self.blocks.parameters(), *self.pos_emb.parameters(), *self.emb.parameters()]
