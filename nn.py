@@ -109,12 +109,13 @@ class LayerNorm:
 
 
 class Sublayer:
-    def __init__(self, f) -> None:
+    def __init__(self, f, dropout=0.1) -> None:
         self.f = f
         self.layer_norm = LayerNorm()
+        self.d = Dropout(dropout)
 
     def __call__(self, x):
-        return self.layer_norm(x + self.f(x))
+        return self.layer_norm(x + self.d(self.f(x)))
 
     def parameters(self):
         return self.f.parameters() + self.layer_norm.parameters()
@@ -149,15 +150,19 @@ class EncodingBlock:
 
 
 class Encoder:
-    def __init__(self, vocav_size, context_length, embedding_dim, num_blocks, num_heads, inner_features) -> None:
+    def __init__(
+        self, vocav_size, context_length, embedding_dim, num_blocks, num_heads, inner_features, dropout=0.1
+    ) -> None:
         self.emb = Embedding(vocav_size, embedding_dim)
         self.pos_emb = Embedding(context_length, embedding_dim)
+        self.d = Dropout(dropout)
         self.pe = self.pos_emb(torch.arange(context_length))
         self.blocks = Sequential(*[EncodingBlock(embedding_dim, num_heads, inner_features) for _ in range(num_blocks)])
 
     def __call__(self, x):
         e = self.emb(x)
         inp = e + self.pe
+        inp = self.d(inp)
         out = self.blocks(inp)
         return out
 
