@@ -163,3 +163,20 @@ class Encoder:
 
     def parameters(self):
         return [*self.blocks.parameters(), *self.pos_emb.parameters(), *self.emb.parameters()]
+
+
+class Dropout:
+    def __init__(self, p=0.5) -> None:
+        self.p = p
+        self.scaling = 1 / (1 - self.p)
+        self.training = True
+
+    def __call__(self, x):
+        if not self.training:
+            return x
+        prob_tensor = torch.full(x.shape, 1 - self.p)
+        mask = torch.bernoulli(prob_tensor)
+        return x * mask * self.scaling
+
+    def parameters(self):
+        return []
